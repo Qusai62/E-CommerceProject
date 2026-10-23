@@ -1,0 +1,27 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# .NET generated files
+**/bin/
+**/obj/
+**/TestResults/
+
+# Local secrets
+**/appsettings.Development.json
+**/appsettings.Local.json
+.env
+.env.*
+!.env.example
+
+# Local database files
+*.mdf
+*.ldf
+
+# Logs
+*.log
+
+# React (future frontend)
+**/node_modules/
+**/dist/
