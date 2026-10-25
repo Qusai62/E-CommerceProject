@@ -6,8 +6,6 @@ namespace ECommerce.Application.Catalog.ProductImage.UpdateProductImage
 {
     public interface IProductImageUpdateRepository
     {
-        public interface IProductImageUpdateRepository
-        {
             Task<ProductImageEntity?> GetByIdAsync(
                 long productId,
                 long imageId,
@@ -20,7 +18,11 @@ namespace ECommerce.Application.Catalog.ProductImage.UpdateProductImage
 
             Task SaveChangesAsync(
                 CancellationToken cancellationToken = default);
-        }
+            Task SaveWithPrimarySwitchAsync(
+        long productId,
+        long imageId,
+        CancellationToken cancellationToken = default);
     }
+    
 }
 

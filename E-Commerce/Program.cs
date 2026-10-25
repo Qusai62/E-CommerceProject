@@ -4,6 +4,8 @@ using ECommerce.Application.Catalog.Product.CreateProduct;
 using ECommerce.Application.Catalog.Product.GetProductById;
 using ECommerce.Application.Catalog.Product.UpdateProduct;
 using ECommerce.Application.Catalog.ProductImage.AddProductImage;
+using ECommerce.Application.Catalog.ProductImage.UpdateProductImage;
+using ECommerce.Application.Catalog.ProductImageApplication.DeleteProductImage;
 using ECommerce.Application.Catalog.ProductVariant.CreateProductVariant;
 using ECommerce.Application.Catalog.ProductVariant.UpdateProductVariant;
 using ECommerce.Application.Catalog.TechnicalSpecification.AddTechnicalSpecification;
@@ -102,6 +104,16 @@ builder.Services.AddScoped<
 
 builder.Services.AddScoped<UpdateProductVariantService>();
 
+builder.Services.AddScoped<IProductImageUpdateRepository,
+    ProductImageUpdateRepository>();
+
+builder.Services.AddScoped<UpdateProductImageService>();
+
+builder.Services.AddScoped<
+    IProductImageDeleteRepository,
+    ProductImageDeleteRepository>();
+
+builder.Services.AddScoped<DeleteProductImageService>();
 
 var app = builder.Build();
 // Configure the HTTP request pipeline.

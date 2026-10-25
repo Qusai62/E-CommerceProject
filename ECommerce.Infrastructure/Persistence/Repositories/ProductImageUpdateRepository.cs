@@ -6,7 +6,7 @@ using ProductImageEntity = ECommerce.Domain.Catalog.ProductImage;
 
 namespace ECommerce.Infrastructure.Persistence.Repositories
 {
-    internal class ProductImageUpdateRepository : IProductImageUpdateRepository
+    public class ProductImageUpdateRepository : IProductImageUpdateRepository
     {
         private readonly ApplicationDbContext _context;
 
@@ -63,7 +63,7 @@ namespace ECommerce.Infrastructure.Persistence.Repositories
                     image.IsPrimary)
                 .ExecuteUpdateAsync(
                     setters => setters
-                        .SetProperty(image => image.IsPrimary, false)
+                        .SetProperty(image => image.IsPrimary, false)//For every database row matching our query, set IsPrimary to false.
                         .SetProperty(
                             image => image.UpdatedAtUtc,
                             DateTime.UtcNow),

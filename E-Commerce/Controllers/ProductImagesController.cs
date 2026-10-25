@@ -1,5 +1,7 @@
 ﻿using E_Commerce.Contracts.Products;
 using ECommerce.Application.Catalog.ProductImage.AddProductImage;
+using ECommerce.Application.Catalog.ProductImage.UpdateProductImage;
+using ECommerce.Application.Catalog.ProductImageApplication.DeleteProductImage;
 using Microsoft.AspNetCore.Mvc;
 
 namespace E_Commerce.Controllers
@@ -9,10 +11,15 @@ namespace E_Commerce.Controllers
     public class ProductImagesController : ControllerBase
     {
         private readonly AddProductImageService _addProductImageService;
-
-        public ProductImagesController(AddProductImageService addProductImageService)
+        private readonly UpdateProductImageService _updateProductImageService;
+        private readonly DeleteProductImageService _deleteProductImageService;
+        public ProductImagesController(AddProductImageService addProductImageService,
+            DeleteProductImageService deleteProductImageService,
+            UpdateProductImageService updateProductImageService)
         {
             _addProductImageService = addProductImageService;
+            _deleteProductImageService = deleteProductImageService;
+            _updateProductImageService = updateProductImageService;
         }
 
         [HttpPost]
@@ -68,5 +75,85 @@ namespace E_Commerce.Controllers
                 StatusCodes.Status201Created,
                 result.Value);
         }
+
+
+        [HttpPut("{imageId:long}")]
+        [ProducesResponseType(
+            typeof(UpdateProductImageResponse),
+            StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<UpdateProductImageResponse>>
+            UpdateProductImage(
+                [FromRoute] long productId,
+                [FromRoute] long imageId,
+                [FromBody] UpdateProductImageRequest request,
+                CancellationToken cancellationToken)
+        {
+            // 1. Map Request to Command
+            var command = new UpdateProductImageCommand
+            {
+                ProductId = productId,
+                ProductImageId = imageId,
+                AltText = request.AltText,
+                SortOrder = request.SortOrder,
+                IsPrimary = request.IsPrimary
+            };
+
+            // 2. Execute Application Service
+            var result = await _updateProductImageService.ExecuteAsync(
+                command,
+                cancellationToken);
+
+            // 3. Handle errors
+            if (result.IsFailure)
+            {
+                if (result.Errors.Any(e =>
+                    e.Code == "Image.NotFound"))
+                {
+                    return NotFound(result.Errors);
+                }
+
+                return BadRequest(result.Errors);
+            }
+
+            // 4. Return updated image
+            return Ok(result.Value);
+        }
+
+
+        [HttpDelete("{imageId:long}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> DeleteImage(
+            [FromRoute] long productId,
+            [FromRoute] long imageId,
+            CancellationToken cancellationToken)
+        {
+            var command = new DeleteProductImageCommand
+            {
+                ProductId = productId,
+                ProductImageId = imageId
+            };
+
+            var result = await _deleteProductImageService.ExecuteAsync(
+                command,
+                cancellationToken);
+
+            if (result.IsFailure)
+            {
+                if (result.Errors.Any(e =>
+                    e.Code == "Image.NotFound"))
+                {
+                    return NotFound(result.Errors);
+                }
+
+                return BadRequest(result.Errors);
+            }
+
+            return NoContent();
+        }
+
     }
 }
