@@ -1,8 +1,10 @@
 ﻿using E_Commerce.Contracts.Products;
+using ECommerce.Application.Catalog.GetProducts;
 using ECommerce.Application.Catalog.Product.CreateProduct;
 using ECommerce.Application.Catalog.Product.GetProductById;
 using ECommerce.Application.Catalog.Product.UpdateProduct;
 using ECommerce.Application.Catalog.ProductVariant.UpdateProductVariant;
+using ECommerce.Application.Common.Pagination;
 using Microsoft.AspNetCore.Mvc;
 
 namespace E_Commerce.Controllers
@@ -14,15 +16,17 @@ namespace E_Commerce.Controllers
         private readonly GetProductByIdService _getProductByIdService;
         private readonly CreateProductService _createProductService;
         private readonly UpdateProductService _updateProductService;
-   
+        private readonly GetProductsService _getProductsService;
+
         public ProductsController(GetProductByIdService getProductByIdService, CreateProductService createProductService,
             UpdateProductService updateProductService,
-             UpdateProductVariantService updateProductVariantService)
+             UpdateProductVariantService updateProductVariantService,
+             GetProductsService getProductsService)
         {
             _getProductByIdService = getProductByIdService;
             _createProductService = createProductService;
             _updateProductService = updateProductService;
-           
+            _getProductsService = getProductsService;
         }
 
         [HttpGet("{id:long}")]
@@ -113,6 +117,33 @@ namespace E_Commerce.Controllers
             return Ok(result.Value);
         }
 
+
+        [HttpGet]
+        [ProducesResponseType(
+            typeof(PagedResult<ProductListItemResponse>),
+            StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetProducts(
+            [FromQuery] GetProductsRequest request,
+            CancellationToken cancellationToken)
+        {
+            var query = new GetProductsQuery
+            {
+                PageNumber = request.PageNumber,
+                PageSize = request.PageSize
+            };
+
+            var result = await _getProductsService.ExecuteAsync(
+                query,
+                cancellationToken);
+
+            if (!result.IsSuccess)
+            {
+                return BadRequest(result.Errors);
+            }
+
+            return Ok(result.Value);
+        }
 
     }
 }

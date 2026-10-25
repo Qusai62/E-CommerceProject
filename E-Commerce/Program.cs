@@ -1,5 +1,6 @@
 using ECommerce.Application.Catalog.Abstractions;
 using ECommerce.Application.Catalog.Common.Abstractions;
+using ECommerce.Application.Catalog.GetProducts;
 using ECommerce.Application.Catalog.Product.CreateProduct;
 using ECommerce.Application.Catalog.Product.GetProductById;
 using ECommerce.Application.Catalog.Product.UpdateProduct;
@@ -14,6 +15,7 @@ using ECommerce.Application.Catalog.TechnicalSpecification.UpdateTechnicalSpecif
 using ECommerce.Infrastructure.Identity;
 using ECommerce.Infrastructure.Persistence;
 using ECommerce.Infrastructure.Persistence.Repositories;
+using ECommerce.Infrastructure.Persistence.Repositories.Catalog;
 using ECommerce.Infrastructure.Storage;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
@@ -115,7 +117,11 @@ builder.Services.AddScoped<
 
 builder.Services.AddScoped<DeleteProductImageService>();
 
-var app = builder.Build();
+builder.Services.AddScoped<
+    IProductListReadRepository,
+    ProductListReadRepository>();
+builder.Services.AddScoped<GetProductsService>();
+var app = builder.Build(); 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
