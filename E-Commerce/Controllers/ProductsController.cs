@@ -130,7 +130,9 @@ namespace E_Commerce.Controllers
             var query = new GetProductsQuery
             {
                 PageNumber = request.PageNumber,
-                PageSize = request.PageSize
+                PageSize = request.PageSize,
+                Search=request.Search
+                
             };
 
             var result = await _getProductsService.ExecuteAsync(

@@ -28,6 +28,14 @@ namespace ECommerce.Infrastructure.Persistence.Repositories.Catalog
             var productsQuery = _context.Products
                 .AsNoTracking()
                 .Where(p => p.IsActive);
+            if (!string.IsNullOrWhiteSpace(query.Search))
+            {
+                var search = query.Search;
+
+                productsQuery = productsQuery.Where(
+                    p => p.Name.Contains(search));
+            }
+
             //Count matching products
             var totalCount = await productsQuery
                 .CountAsync(cancellationToken);
@@ -42,7 +50,11 @@ namespace ECommerce.Infrastructure.Persistence.Repositories.Catalog
                 {
                     ProductId = p.ProductId,
                     Name = p.Name,
-                    Slug = p.Slug
+                    Slug = p.Slug,
+                    PriceFrom = p.Variants
+            .Where(v => v.IsActive)
+            .Select(v => (decimal?)v.Price)
+            .Min()
                 })
                 .ToListAsync(cancellationToken);
 

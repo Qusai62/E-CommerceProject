@@ -16,7 +16,7 @@ namespace ECommerce.Application.Catalog.GetProducts
         public long? BrandId { get; set; }
         public long? CategoryId { get; set; }
 
-        public decimal PriceFrom { get; set; }
+        public decimal? PriceFrom { get; set; }
 
         public string? PrimaryImageStorageKey { get; set; }
     }

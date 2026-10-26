@@ -57,8 +57,31 @@ namespace ECommerce.Application.Catalog.GetProducts
                     "The requested page is too large.",
                     "PageNumber"));
             }
+
+            var search = query.Search?.Trim();
+
+            if (string.IsNullOrWhiteSpace(search))
+            {
+                search = null;
+            }
+
+            if (search is not null && search.Length > 100)
+            {
+                errors.Add(new Error(
+                    "InvalidSearch",
+                    "Search cannot exceed 100 characters.",
+                    "Search"));
+            }
+
+            var normalizedQuery = new GetProductsQuery
+            {
+                PageNumber = query.PageNumber,
+                PageSize = query.PageSize,
+                Search = search
+            };
+
             var products = await _repository.GetProductsAsync(
-                query,
+                normalizedQuery,
                 cancellationToken);
 
             return Result<PagedResult<ProductListItemResponse>>
