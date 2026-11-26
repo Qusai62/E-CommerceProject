@@ -1,28 +1,20 @@
-# Visual Studio
-**/PrivateUploads/
-.vs/
-*.user
-*.suo
+# Operating system
+.DS_Store
+Thumbs.db
+Desktop.ini
 
-# .NET generated files
-**/bin/
-**/obj/
-**/TestResults/
-
-# Local secrets
-**/appsettings.Development.json
-**/appsettings.Local.json
+# Environment variables
 .env
 .env.*
 !.env.example
 
-# Local database files
-*.mdf
-*.ldf
+# Sensitive files
+*.pfx
+*.p12
+*.publishsettings
+secrets.json
 
 # Logs
 *.log
-
-# React (future frontend)
-**/node_modules/
-**/dist/
+# Git repository backups
+*.bundle
