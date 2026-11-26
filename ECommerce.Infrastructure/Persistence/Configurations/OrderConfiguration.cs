@@ -9,35 +9,44 @@ using System.Threading.Tasks;
 
 namespace ECommerce.Infrastructure.Persistence.Configurations
 {
-    public class OrderConfiguration : IEntityTypeConfiguration<Order>
+    public sealed class OrderConfiguration
+    : IEntityTypeConfiguration<Order>
     {
         public void Configure(EntityTypeBuilder<Order> builder)
         {
-            builder.ToTable(
-                "Order",
-                table =>
-                {
-                    table.HasCheckConstraint(
-                        "CK_Order_ShippingCharge_NonNegative",
-                        "[ShippingCharge] >= 0");
+            // =====================================
+            // Table and Check Constraints
+            // =====================================
 
-                    table.HasCheckConstraint(
-                        "CK_Order_TotalAmount_Positive",
-                        "[TotalAmount] > 0");
+            builder.ToTable("Order", table =>
+            {
+                table.HasCheckConstraint(
+                    "CK_Order_ShippingCharge_NonNegative",
+                    "[ShippingCharge] >= 0");
 
-                    table.HasCheckConstraint(
-                        "CK_Order_FulfillmentStatus_Valid",
-                        "[FulfillmentStatus] IN (1, 2, 3, 4)");
-                });
+                table.HasCheckConstraint(
+                    "CK_Order_TotalAmount_Positive",
+                    "[TotalAmount] > 0");
 
+                table.HasCheckConstraint(
+                    "CK_Order_FulfillmentStatus_Valid",
+                    "[FulfillmentStatus] IN (1, 2, 3, 4)");
+            });
+
+            // =====================================
             // Primary Key
+            // =====================================
+
             builder.HasKey(x => x.OrderId)
                 .HasName("PK_Order");
 
             builder.Property(x => x.OrderId)
                 .ValueGeneratedOnAdd();
 
+            // =====================================
             // Order Number
+            // =====================================
+
             builder.Property(x => x.OrderNumber)
                 .IsRequired()
                 .HasMaxLength(50);
@@ -46,7 +55,10 @@ namespace ECommerce.Infrastructure.Persistence.Configurations
                 .IsUnique()
                 .HasDatabaseName("UQ_Order_OrderNumber");
 
+            // =====================================
             // Customer Relationship
+            // =====================================
+
             builder.Property(x => x.CustomerId)
                 .IsRequired();
 
@@ -57,12 +69,26 @@ namespace ECommerce.Infrastructure.Persistence.Configurations
                 .HasConstraintName(
                     "FK_Order_Customer_CustomerId");
 
+            // =====================================
             // Fulfillment Status
-            builder.Property(x => x.FulfillmentStatus)
-     .IsRequired()
-     .HasConversion<int>();
+            // =====================================
 
+            builder.Property(x => x.FulfillmentStatus)
+                .IsRequired()
+                .HasConversion<int>();
+
+            // =====================================
+            // Fulfillment Status History
+            // =====================================
+
+            builder.Navigation(x => x.FulfillmentStatusHistory)
+                .HasField("_fulfillmentStatusHistory")
+                .UsePropertyAccessMode(PropertyAccessMode.Field);
+
+            // =====================================
             // Monetary Values
+            // =====================================
+
             builder.Property(x => x.ShippingCharge)
                 .IsRequired()
                 .HasPrecision(18, 3);
@@ -71,7 +97,10 @@ namespace ECommerce.Infrastructure.Persistence.Configurations
                 .IsRequired()
                 .HasPrecision(18, 3);
 
+            // =====================================
             // Delivery Address Snapshot
+            // =====================================
+
             builder.Property(x => x.DeliveryRecipientName)
                 .IsRequired()
                 .HasMaxLength(200);
@@ -99,7 +128,10 @@ namespace ECommerce.Infrastructure.Persistence.Configurations
             builder.Property(x => x.DeliveryAdditionalInfo)
                 .HasMaxLength(500);
 
+            // =====================================
             // Timestamps
+            // =====================================
+
             builder.Property(x => x.PlacedAtUtc)
                 .IsRequired()
                 .HasColumnType("datetime2(3)");
@@ -108,12 +140,33 @@ namespace ECommerce.Infrastructure.Persistence.Configurations
                 .IsRequired()
                 .HasColumnType("datetime2(3)");
 
+            // =====================================
             // Optimistic Concurrency
-            builder.Property<byte[]>("RowVersion")
-                .IsRowVersion()
-                .IsConcurrencyToken();
+            // =====================================
 
-            // Common Query Indexes
+            builder.Property(o => o.RowVersion)
+     .IsRowVersion()
+     .IsRequired(false);
+
+            // =====================================
+            // Checkout Idempotency
+            // =====================================
+
+            builder.Property(x => x.CheckoutSubmissionId)
+                .IsRequired();
+
+            builder.HasIndex(x => x.CheckoutSubmissionId)
+                .IsUnique()
+                .HasDatabaseName("UX_Order_CheckoutSubmissionId");
+
+            builder.Property(x => x.CheckoutRequestFingerprint)
+                .IsRequired()
+                .HasMaxLength(64);
+
+            // =====================================
+            // Query Indexes
+            // =====================================
+
             builder.HasIndex(x => new
             {
                 x.CustomerId,

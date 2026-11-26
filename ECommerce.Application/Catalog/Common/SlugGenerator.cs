@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ECommerce.Application.Catalog.Common
 {
-    public static class ProductSlugGenerator
+    public static class SlugGenerator
     {
         public static string Generate(string name)
         {

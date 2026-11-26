@@ -2,12 +2,15 @@
 using ECommerce.Application.Catalog.TechnicalSpecification.AddTechnicalSpecification;
 using ECommerce.Application.Catalog.TechnicalSpecification.DeleteTechnicalSpecification;
 using ECommerce.Application.Catalog.TechnicalSpecification.UpdateTechnicalSpecification;
+using ECommerce.Application.Common.Security;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace E_Commerce.Controllers
 {
     [ApiController]
     [Route("api/products")]
+  
     public class TechnicalSpecificationsController : ControllerBase
     {
         private readonly AddTechnicalSpecificationService _addTechnicalSpecificationService;

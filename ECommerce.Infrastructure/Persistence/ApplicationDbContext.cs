@@ -1,10 +1,12 @@
 ﻿using ECommerce.Domain.Cart;
 using ECommerce.Domain.Catalog;
 using ECommerce.Domain.CustomerAccount;
+using ECommerce.Domain.Entities;
 using ECommerce.Domain.InventoryManagement;
 using ECommerce.Domain.Orders;
 using ECommerce.Domain.Payments;
 using ECommerce.Domain.Shipping;
+using ECommerce.Domain.Supplier_Invoice___Payment;
 using ECommerce.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -44,6 +46,18 @@ namespace ECommerce.Infrastructure.Persistence
         public DbSet<Shipment> Shipments { get; set; }
         public DbSet<ShippingConfiguration> ShippingConfigurations { get; set; }
 
+        public DbSet<InStoreSale> InStoreSales { get; set; }
+        public DbSet<InStoreSaleItem> InStoreSaleItems { get; set; }
+
+        public DbSet<Supplier> Suppliers => Set<Supplier>();
+
+        public DbSet<SupplierInvoice> SupplierInvoices =>
+            Set<SupplierInvoice>();
+
+        public DbSet<SupplierPayment> SupplierPayments =>
+            Set<SupplierPayment>();
+        public DbSet<SupplierInvoiceItem> SupplierInvoiceItems =>
+    Set<SupplierInvoiceItem>();
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

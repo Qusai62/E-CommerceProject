@@ -162,7 +162,8 @@ namespace ECommerce.Infrastructure.Persistence.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
+                        .HasColumnType("nvarchar(150)")
+                        .UseCollation("SQL_Latin1_General_CP1_CI_AS");
 
                     b.Property<long?>("ParentCategoryId")
                         .HasColumnType("bigint");
@@ -190,8 +191,7 @@ namespace ECommerce.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ParentCategoryId", "Name")
                         .IsUnique()
-                        .HasDatabaseName("UQ_Category_ParentCategoryId_Name")
-                        .HasFilter("[ParentCategoryId] IS NOT NULL");
+                        .HasDatabaseName("UQ_Category_ParentCategoryId_Name");
 
                     b.ToTable("Category", (string)null);
                 });
@@ -534,11 +534,117 @@ namespace ECommerce.Infrastructure.Persistence.Migrations
                         .HasName("PK_SavedAddress");
 
                     b.HasIndex("CustomerId")
+                        .HasDatabaseName("IX_SavedAddress_CustomerId");
+
+                    b.HasIndex(new[] { "CustomerId" }, "UQ_SavedAddress_CustomerId_Default")
                         .IsUnique()
-                        .HasDatabaseName("UQ_SavedAddress_CustomerId_Default")
                         .HasFilter("[IsDefault] = 1");
 
                     b.ToTable("SavedAddress", (string)null);
+                });
+
+            modelBuilder.Entity("ECommerce.Domain.Entities.InStoreSale", b =>
+                {
+                    b.Property<long>("InStoreSaleId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("InStoreSaleId"));
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("SaleNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("SoldAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SubmissionFingerprint")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<Guid>("SubmissionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("VoidedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("InStoreSaleId");
+
+                    b.HasIndex("SaleNumber")
+                        .IsUnique();
+
+                    b.HasIndex("SoldAtUtc");
+
+                    b.HasIndex("SubmissionId")
+                        .IsUnique();
+
+                    b.ToTable("InStoreSales", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_InStoreSales_Status", "[Status] IN (1, 2)");
+
+                            t.HasCheckConstraint("CK_InStoreSales_TotalAmount", "[TotalAmount] > 0");
+                        });
+                });
+
+            modelBuilder.Entity("ECommerce.Domain.Entities.InStoreSaleItem", b =>
+                {
+                    b.Property<long>("InStoreSaleItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("InStoreSaleItemId"));
+
+                    b.Property<long>("InStoreSaleId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("ItemName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<decimal>("LineTotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("InStoreSaleItemId");
+
+                    b.HasIndex("InStoreSaleId");
+
+                    b.ToTable("InStoreSaleItems", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_InStoreSaleItems_LineTotal", "[LineTotal] > 0");
+
+                            t.HasCheckConstraint("CK_InStoreSaleItems_LineTotalCalculation", "[LineTotal] = [UnitPrice] * [Quantity]");
+
+                            t.HasCheckConstraint("CK_InStoreSaleItems_Quantity", "[Quantity] > 0");
+
+                            t.HasCheckConstraint("CK_InStoreSaleItems_UnitPrice", "[UnitPrice] > 0");
+                        });
                 });
 
             modelBuilder.Entity("ECommerce.Domain.InventoryManagement.CODStockAllocation", b =>
@@ -702,6 +808,14 @@ namespace ECommerce.Infrastructure.Persistence.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("OrderId"));
 
+                    b.Property<string>("CheckoutRequestFingerprint")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<Guid>("CheckoutSubmissionId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<long>("CustomerId")
                         .HasColumnType("bigint");
 
@@ -769,6 +883,10 @@ namespace ECommerce.Infrastructure.Persistence.Migrations
                     b.HasKey("OrderId")
                         .HasName("PK_Order");
 
+                    b.HasIndex("CheckoutSubmissionId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Order_CheckoutSubmissionId");
+
                     b.HasIndex("OrderNumber")
                         .IsUnique()
                         .HasDatabaseName("UQ_Order_OrderNumber");
@@ -819,7 +937,7 @@ namespace ECommerce.Infrastructure.Persistence.Migrations
                     b.HasIndex("ChangedByApplicationUserId")
                         .HasDatabaseName("IX_OrderFulfillmentStatusHistory_ChangedByApplicationUserId");
 
-                    b.HasIndex("OrderId", "ChangedAtUtc")
+                    b.HasIndex("OrderId", "ChangedAtUtc", "OrderFulfillmentStatusHistoryId")
                         .HasDatabaseName("IX_OrderFulfillmentStatusHistory_OrderId_ChangedAtUtc");
 
                     b.ToTable("OrderFulfillmentStatusHistory", null, t =>
@@ -1092,6 +1210,167 @@ namespace ECommerce.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("ECommerce.Domain.Supplier_Invoice___Payment.Supplier", b =>
+                {
+                    b.Property<long>("SupplierId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("SupplierId"));
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(254)
+                        .HasColumnType("nvarchar(254)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("SupplierId");
+
+                    b.HasIndex("Name");
+
+                    b.ToTable("Suppliers", (string)null);
+                });
+
+            modelBuilder.Entity("ECommerce.Domain.Supplier_Invoice___Payment.SupplierInvoice", b =>
+                {
+                    b.Property<long>("SupplierInvoiceId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("SupplierInvoiceId"));
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("InvoiceDateUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("InvoiceNumber")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<decimal>("PaidAmount")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)")
+                        .HasDefaultValue(0m);
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<long>("SupplierId")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("SupplierInvoiceId");
+
+                    b.HasIndex("SupplierId", "InvoiceNumber")
+                        .IsUnique();
+
+                    b.ToTable("SupplierInvoices", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_SupplierInvoice_PaidAmount", "[PaidAmount] >= 0 AND [PaidAmount] <= [TotalAmount]");
+
+                            t.HasCheckConstraint("CK_SupplierInvoice_TotalAmount", "[TotalAmount] > 0");
+                        });
+                });
+
+            modelBuilder.Entity("ECommerce.Domain.Supplier_Invoice___Payment.SupplierInvoiceItem", b =>
+                {
+                    b.Property<long>("SupplierInvoiceItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("SupplierInvoiceItemId"));
+
+                    b.Property<string>("ProductName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<long>("SupplierInvoiceId")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("SupplierInvoiceItemId");
+
+                    b.HasIndex("SupplierInvoiceId");
+
+                    b.ToTable("SupplierInvoiceItems", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_SupplierInvoiceItem_Quantity", "[Quantity] > 0");
+
+                            t.HasCheckConstraint("CK_SupplierInvoiceItem_UnitPrice", "[UnitPrice] > 0");
+                        });
+                });
+
+            modelBuilder.Entity("ECommerce.Domain.Supplier_Invoice___Payment.SupplierPayment", b =>
+                {
+                    b.Property<long>("SupplierPaymentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("SupplierPaymentId"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("PaidAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("RecordedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("SubmissionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<long>("SupplierInvoiceId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("SupplierPaymentId");
+
+                    b.HasIndex("SubmissionId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_SupplierPayments_SubmissionId");
+
+                    b.HasIndex("SupplierInvoiceId", "PaidAtUtc");
+
+                    b.ToTable("SupplierPayments", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_SupplierPayment_Amount", "[Amount] > 0");
+                        });
+                });
+
             modelBuilder.Entity("ECommerce.Infrastructure.Identity.ApplicationUser", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1148,7 +1427,9 @@ namespace ECommerce.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("NormalizedEmail")
-                        .HasDatabaseName("EmailIndex");
+                        .IsUnique()
+                        .HasDatabaseName("UQ_AspNetUsers_NormalizedEmail")
+                        .HasFilter("[NormalizedEmail] IS NOT NULL");
 
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
@@ -1422,6 +1703,17 @@ namespace ECommerce.Infrastructure.Persistence.Migrations
                     b.Navigation("Customer");
                 });
 
+            modelBuilder.Entity("ECommerce.Domain.Entities.InStoreSaleItem", b =>
+                {
+                    b.HasOne("ECommerce.Domain.Entities.InStoreSale", "InStoreSale")
+                        .WithMany("Items")
+                        .HasForeignKey("InStoreSaleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("InStoreSale");
+                });
+
             modelBuilder.Entity("ECommerce.Domain.InventoryManagement.CODStockAllocation", b =>
                 {
                     b.HasOne("ECommerce.Domain.InventoryManagement.Inventory", "Inventory")
@@ -1563,6 +1855,39 @@ namespace ECommerce.Infrastructure.Persistence.Migrations
                     b.Navigation("Order");
                 });
 
+            modelBuilder.Entity("ECommerce.Domain.Supplier_Invoice___Payment.SupplierInvoice", b =>
+                {
+                    b.HasOne("ECommerce.Domain.Supplier_Invoice___Payment.Supplier", "Supplier")
+                        .WithMany("Invoices")
+                        .HasForeignKey("SupplierId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Supplier");
+                });
+
+            modelBuilder.Entity("ECommerce.Domain.Supplier_Invoice___Payment.SupplierInvoiceItem", b =>
+                {
+                    b.HasOne("ECommerce.Domain.Supplier_Invoice___Payment.SupplierInvoice", "SupplierInvoice")
+                        .WithMany("Items")
+                        .HasForeignKey("SupplierInvoiceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("SupplierInvoice");
+                });
+
+            modelBuilder.Entity("ECommerce.Domain.Supplier_Invoice___Payment.SupplierPayment", b =>
+                {
+                    b.HasOne("ECommerce.Domain.Supplier_Invoice___Payment.SupplierInvoice", "SupplierInvoice")
+                        .WithMany("Payments")
+                        .HasForeignKey("SupplierInvoiceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("SupplierInvoice");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
@@ -1662,6 +1987,11 @@ namespace ECommerce.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("ECommerce.Domain.Entities.InStoreSale", b =>
+                {
+                    b.Navigation("Items");
+                });
+
             modelBuilder.Entity("ECommerce.Domain.InventoryManagement.Inventory", b =>
                 {
                     b.Navigation("CODStockAllocations");
@@ -1680,8 +2010,7 @@ namespace ECommerce.Infrastructure.Persistence.Migrations
                     b.Navigation("Payment")
                         .IsRequired();
 
-                    b.Navigation("Shipment")
-                        .IsRequired();
+                    b.Navigation("Shipment");
                 });
 
             modelBuilder.Entity("ECommerce.Domain.Payments.Payment", b =>
@@ -1692,6 +2021,18 @@ namespace ECommerce.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("ECommerce.Domain.Payments.PaymentAttempt", b =>
                 {
                     b.Navigation("StockReservations");
+                });
+
+            modelBuilder.Entity("ECommerce.Domain.Supplier_Invoice___Payment.Supplier", b =>
+                {
+                    b.Navigation("Invoices");
+                });
+
+            modelBuilder.Entity("ECommerce.Domain.Supplier_Invoice___Payment.SupplierInvoice", b =>
+                {
+                    b.Navigation("Items");
+
+                    b.Navigation("Payments");
                 });
 #pragma warning restore 612, 618
         }

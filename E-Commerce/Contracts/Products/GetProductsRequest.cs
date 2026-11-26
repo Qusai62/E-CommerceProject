@@ -11,7 +11,7 @@
         public long? CategoryId { get; set; }
 
         public decimal? MinPrice { get; set; }
-        public decimal? MaxPrice { get; set; }
+        public decimal? MaxPrice { get; set; }//is generally better suited for money calculations requiring decimal precision.
 
         public string SortBy { get; set; } = "newest";
         public string SortDirection { get; set; } = "desc";

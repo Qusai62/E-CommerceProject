@@ -1,9 +1,6 @@
 ﻿using ECommerce.Domain.Catalog;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace ECommerce.Domain.InventoryManagement
 {
@@ -19,7 +16,7 @@ namespace ECommerce.Domain.InventoryManagement
 
         public DateTime UpdatedAtUtc { get; set; }
 
-        public ProductVariant ProductVariant { get; set; } = null!;
+        public ProductVariant ProductVariant { get; set; } = null!;//The Navigation Property allows C# LINQ queries to refer to the related ProductVariant.
         public ICollection<StockReservation> StockReservations { get; set; }
     = new List<StockReservation>();
 

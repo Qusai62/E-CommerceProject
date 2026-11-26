@@ -20,7 +20,7 @@ namespace ECommerce.Infrastructure.Persistence.Repositories
             CancellationToken cancellationToken = default)
         {
             return _context.Brands
-                .AnyAsync(b => b.BrandId == brandId, cancellationToken);
+                .AnyAsync(b => b.BrandId == brandId && b.IsActive, cancellationToken);
         }
 
         public Task<bool> CategoryExistsAsync(

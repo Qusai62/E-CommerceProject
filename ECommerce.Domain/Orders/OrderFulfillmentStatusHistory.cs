@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ECommerce.Domain.Payments;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,20 +7,92 @@ using System.Threading.Tasks;
 
 namespace ECommerce.Domain.Orders
 {
-    public class OrderFulfillmentStatusHistory
+    public sealed class OrderFulfillmentStatusHistory
     {
-        public long OrderFulfillmentStatusHistoryId { get; set; }
+        // Used by EF Core.
+        private OrderFulfillmentStatusHistory()
+        {
+        }
 
-        public long OrderId { get; set; }
+        internal OrderFulfillmentStatusHistory(
+            Order order,
+            OrderFulfillmentStatus status,
+            DateTime changedAtUtc,
+            Guid? changedByApplicationUserId = null,
+            string? reason = null)
+        {
+            ArgumentNullException.ThrowIfNull(order);
 
-        public OrderFulfillmentStatus Status { get; set; }
+            if (!Enum.IsDefined(status))
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(status));
+            }
 
-        public DateTime ChangedAtUtc { get; set; }
+            if (changedAtUtc.Kind != DateTimeKind.Utc)
+            {
+                throw new ArgumentException(
+                    "The change timestamp must be UTC.",
+                    nameof(changedAtUtc));
+            }
 
-        public Guid? ChangedByApplicationUserId { get; set; }
+            if (reason is { Length: > 500 })
+            {
+                throw new ArgumentException(
+                    "Reason cannot exceed 500 characters.",
+                    nameof(reason));
+            }
 
-        public string? Reason { get; set; }
+            Order = order;
+            Status = status;
+            ChangedAtUtc = changedAtUtc;
+            ChangedByApplicationUserId =
+                changedByApplicationUserId;
+            Reason = reason;
+        }
 
-        public Order Order { get; set; } = null!;
+        public long OrderFulfillmentStatusHistoryId
+        {
+            get;
+            private set;
+        }
+
+        public long OrderId
+        {
+            get;
+            private set;
+        }
+
+        public OrderFulfillmentStatus Status
+        {
+            get;
+            private set;
+        }
+
+        public DateTime ChangedAtUtc
+        {
+            get;
+            private set;
+        }
+
+        public Guid? ChangedByApplicationUserId
+        {
+            get;
+            private set;
+        }
+
+        public string? Reason
+        {
+            get;
+            private set;
+        }
+
+        public Order Order
+        {
+            get;
+            private set;
+        } = null!;
     }
+
+
 }

@@ -24,8 +24,9 @@ namespace ECommerce.Infrastructure.Persistence.Configurations
 
             // Category Information
             builder.Property(x => x.Name)
-                .IsRequired()
-                .HasMaxLength(150);
+     .IsRequired()
+     .HasMaxLength(150)
+     .UseCollation("SQL_Latin1_General_CP1_CI_AS");
 
             builder.Property(x => x.Slug)
                 .IsRequired()
@@ -59,8 +60,9 @@ namespace ECommerce.Infrastructure.Persistence.Configurations
                 x.ParentCategoryId,
                 x.Name
             })
-            .IsUnique()
-            .HasDatabaseName("UQ_Category_ParentCategoryId_Name");
+ .IsUnique()
+ .HasFilter(null)
+ .HasDatabaseName("UQ_Category_ParentCategoryId_Name");
 
             // Useful when retrieving child categories
             builder.HasIndex(x => x.ParentCategoryId)

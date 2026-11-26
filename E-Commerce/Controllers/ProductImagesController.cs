@@ -2,12 +2,15 @@
 using ECommerce.Application.Catalog.ProductImage.AddProductImage;
 using ECommerce.Application.Catalog.ProductImage.UpdateProductImage;
 using ECommerce.Application.Catalog.ProductImageApplication.DeleteProductImage;
+using ECommerce.Application.Common.Security;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace E_Commerce.Controllers
 {
     [ApiController]
     [Route("api/products/{productId:long}/images")]
+    
     public class ProductImagesController : ControllerBase
     {
         private readonly AddProductImageService _addProductImageService;

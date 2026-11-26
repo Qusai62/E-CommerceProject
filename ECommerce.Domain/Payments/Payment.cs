@@ -29,5 +29,23 @@ namespace ECommerce.Domain.Payments
 
         public ICollection<PaymentAttempt> PaymentAttempts { get; set; }
             = new List<PaymentAttempt>();
+
+        public void MarkAsPaid(DateTime paidAtUtc)
+        {
+            if (Method != PaymentMethod.CashOnDelivery)
+            {
+                throw new InvalidOperationException(
+                    "Only Cash on Delivery payments can be collected.");
+            }
+
+            if (Status != PaymentStatus.Unpaid)
+            {
+                throw new InvalidOperationException(
+                    "Payment has already been collected or is not unpaid.");
+            }
+
+            Status = PaymentStatus.Paid;
+            PaidAtUtc = paidAtUtc;
+        }
     }
 }

@@ -69,11 +69,12 @@ namespace ECommerce.Infrastructure.Persistence.Configurations
             builder.HasIndex(x => x.CustomerId)
                 .HasDatabaseName("IX_SavedAddress_CustomerId");
 
-            // A customer can have at most one default address
-            builder.HasIndex(x => x.CustomerId)
+            // Unique filtered index for the default address
+            builder.HasIndex(
+                    x => x.CustomerId,
+                    "UQ_SavedAddress_CustomerId_Default")
                 .IsUnique()
-                .HasFilter("[IsDefault] = 1")
-                .HasDatabaseName("UQ_SavedAddress_CustomerId_Default");
+                .HasFilter("[IsDefault] = 1");
 
             // Audit Fields
             builder.Property(x => x.CreatedAtUtc)

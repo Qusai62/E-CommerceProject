@@ -84,7 +84,7 @@ namespace ECommerce.Application.Catalog.Product.CreateProduct
                 {
                     errors.Add(new Error(
                         "Brand.NotFound",
-                        "The selected brand does not exist.",
+                        "The selected brand does not exist or inactive.",
                         "BrandId"));
                 }
             }

@@ -1,10 +1,15 @@
 ﻿using E_Commerce.Contracts.Products;
+using ECommerce.Application.Catalog.DeactivateProduct;
 using ECommerce.Application.Catalog.GetProducts;
 using ECommerce.Application.Catalog.Product.CreateProduct;
 using ECommerce.Application.Catalog.Product.GetProductById;
 using ECommerce.Application.Catalog.Product.UpdateProduct;
 using ECommerce.Application.Catalog.ProductVariant.UpdateProductVariant;
+using ECommerce.Application.Catalog.ReactivateProduct;
 using ECommerce.Application.Common.Pagination;
+using ECommerce.Application.Common.Results;
+using ECommerce.Application.Common.Security;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace E_Commerce.Controllers
@@ -17,19 +22,25 @@ namespace E_Commerce.Controllers
         private readonly CreateProductService _createProductService;
         private readonly UpdateProductService _updateProductService;
         private readonly GetProductsService _getProductsService;
-
+        private readonly DeactivateProductService _deactivateProductService;
+        private readonly ReactivateProductService _reactivateProductService;
         public ProductsController(GetProductByIdService getProductByIdService, CreateProductService createProductService,
             UpdateProductService updateProductService,
              UpdateProductVariantService updateProductVariantService,
-             GetProductsService getProductsService)
+             GetProductsService getProductsService,
+             DeactivateProductService deactivateProductService,
+             ReactivateProductService reactivateProductService)
         {
             _getProductByIdService = getProductByIdService;
             _createProductService = createProductService;
             _updateProductService = updateProductService;
             _getProductsService = getProductsService;
+            _deactivateProductService = deactivateProductService;
+            _reactivateProductService = reactivateProductService;
         }
 
         [HttpGet("{id:long}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetById(long id,CancellationToken cancellationToken)
         {
            var product=await _getProductByIdService.ExecuteAsync(id,cancellationToken);
@@ -43,9 +54,13 @@ namespace E_Commerce.Controllers
         }
 
         [HttpPost]
+     
+    
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         //These attributes describe the HTTP responses the endpoint is intended to return.
         public async Task<IActionResult> Create(
     [FromBody] CreateProductCommand command,
@@ -76,6 +91,7 @@ namespace E_Commerce.Controllers
 
 
         [HttpPut("{id:long}")]
+        [Authorize(Policy = AuthorizationPolicies.StoreOwnerOnly)]
         [ProducesResponseType(
             typeof(UpdateProductResponse),
             StatusCodes.Status200OK)]
@@ -119,6 +135,7 @@ namespace E_Commerce.Controllers
 
 
         [HttpGet]
+        [AllowAnonymous]
         [ProducesResponseType(
             typeof(PagedResult<ProductListItemResponse>),
             StatusCodes.Status200OK)]
@@ -131,8 +148,13 @@ namespace E_Commerce.Controllers
             {
                 PageNumber = request.PageNumber,
                 PageSize = request.PageSize,
-                Search=request.Search
-                
+                Search=request.Search,
+                 BrandId = request.BrandId,
+                CategoryId = request.CategoryId,
+                MinPrice = request.MinPrice,
+                MaxPrice = request.MaxPrice,
+                SortBy = request.SortBy,
+                SortDirection = request.SortDirection
             };
 
             var result = await _getProductsService.ExecuteAsync(
@@ -147,5 +169,71 @@ namespace E_Commerce.Controllers
             return Ok(result.Value);
         }
 
+        [HttpPatch("{productId:long}/deactivate")]
+      
+        // TODO: Enable StoreOwner authorization when authentication is implemented.
+        //[Authorize(Policy = "CatalogManage")]
+        public async Task<IActionResult> DeactivateProduct(
+    long productId,
+    CancellationToken cancellationToken)
+        {
+            var command = new DeactivateProductCommand
+            {
+                ProductId = productId
+            };
+
+            var result = await _deactivateProductService.ExecuteAsync(
+                command,
+                cancellationToken);
+
+            if (!result.IsSuccess)
+            {
+                return MapActivationError(result.Errors);
+            }
+
+            return Ok(result.Value);
+        }
+
+        [HttpPatch("{productId:long}/reactivate")]
+       
+        // TODO: Enable StoreOwner authorization when authentication is implemented.
+        //[Authorize(Policy = "CatalogManage")]
+        public async Task<IActionResult> ReactivateProduct(
+    long productId,
+    CancellationToken cancellationToken)
+        {
+            var command = new ReactivateProductCommand
+            {
+                ProductId = productId
+            };
+
+            var result = await _reactivateProductService.ExecuteAsync(
+                command,
+                cancellationToken);
+
+            if (!result.IsSuccess)
+            {
+                return MapActivationError(result.Errors);
+            }
+
+            return Ok(result.Value);
+        }
+        private IActionResult MapActivationError(
+    IReadOnlyList<Error> errors)
+        {
+            if (errors.Any(e => e.Code == "ProductNotFound"))
+                return NotFound(errors);
+
+            if (errors.Any(e =>
+                e.Code == "ProductAlreadyInactive" ||
+                e.Code == "ProductAlreadyActive" ||
+                e.Code == "InvalidProductInformation" ||
+                e.Code == "InvalidCatalogReferences"))
+            {
+                return Conflict(errors);
+            }
+
+            return BadRequest(errors);
+        }
     }
 }

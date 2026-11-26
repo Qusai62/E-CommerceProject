@@ -1,12 +1,15 @@
 ﻿using E_Commerce.Contracts.Products;
 using ECommerce.Application.Catalog.ProductVariant.CreateProductVariant;
 using ECommerce.Application.Catalog.ProductVariant.UpdateProductVariant;
+using ECommerce.Application.Common.Security;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace E_Commerce.Controllers
 {
     [ApiController]
     [Route("api/products/{productId:long}/variants")]
+
     public class ProductVariantsController : ControllerBase
     {
         private readonly CreateProductVariantService _createProductVariantService;
@@ -18,6 +21,7 @@ namespace E_Commerce.Controllers
 
 
         [HttpPost]
+       
         [ProducesResponseType(
     typeof(CreateProductVariantResponse),
     StatusCodes.Status201Created)]
@@ -72,6 +76,7 @@ namespace E_Commerce.Controllers
         }
 
         [HttpPut("{variantId:long}")]
+        [Authorize(Policy = AuthorizationPolicies.StoreOwnerOnly)]
         [ProducesResponseType(
            typeof(UpdateProductVariantResponse),
            StatusCodes.Status200OK)]

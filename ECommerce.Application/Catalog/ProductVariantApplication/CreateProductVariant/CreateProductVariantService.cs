@@ -5,7 +5,7 @@ using ECommerce.Domain.InventoryManagement;
 using System;
 using System.Collections.Generic;
 using ProductVariantEntity = ECommerce.Domain.Catalog.ProductVariant;
-
+using InventoryEntity = ECommerce.Domain.InventoryManagement.Inventory;
 
 namespace ECommerce.Application.Catalog.ProductVariant.CreateProductVariant
 {
@@ -190,7 +190,7 @@ namespace ECommerce.Application.Catalog.ProductVariant.CreateProductVariant
                 CreatedAtUtc = now,
                 UpdatedAtUtc = now,
 
-                Inventory = new Inventory
+                Inventory = new InventoryEntity
                 {
                     OnHandQuantity = 0,
                     CreatedAtUtc = now,

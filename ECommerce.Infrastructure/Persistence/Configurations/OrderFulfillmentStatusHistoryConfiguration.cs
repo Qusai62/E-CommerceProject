@@ -10,28 +10,37 @@ using System.Threading.Tasks;
 
 namespace ECommerce.Infrastructure.Persistence.Configurations
 {
-    public class OrderFulfillmentStatusHistoryConfiguration : IEntityTypeConfiguration<OrderFulfillmentStatusHistory>
+    public sealed class OrderFulfillmentStatusHistoryConfiguration
+     : IEntityTypeConfiguration<OrderFulfillmentStatusHistory>
     {
         public void Configure(
-        EntityTypeBuilder<OrderFulfillmentStatusHistory> builder)
+            EntityTypeBuilder<OrderFulfillmentStatusHistory> builder)
         {
-            builder.ToTable(
-                "OrderFulfillmentStatusHistory",
-                table =>
-                {
-                    table.HasCheckConstraint(
-                        "CK_OrderFulfillmentStatusHistory_Status_Valid",
-                        "[Status] IN (1, 2, 3, 4)");
-                });
+            // =====================================
+            // Table and Check Constraints
+            // =====================================
 
+            builder.ToTable("OrderFulfillmentStatusHistory", table =>
+            {
+                table.HasCheckConstraint(
+                    "CK_OrderFulfillmentStatusHistory_Status_Valid",
+                    "[Status] IN (1, 2, 3, 4)");
+            });
+
+            // =====================================
             // Primary Key
+            // =====================================
+
             builder.HasKey(x => x.OrderFulfillmentStatusHistoryId)
                 .HasName("PK_OrderFulfillmentStatusHistory");
 
             builder.Property(x => x.OrderFulfillmentStatusHistoryId)
                 .ValueGeneratedOnAdd();
 
+            // =====================================
             // Order Relationship
+            // =====================================
+
             builder.Property(x => x.OrderId)
                 .IsRequired();
 
@@ -42,17 +51,26 @@ namespace ECommerce.Infrastructure.Persistence.Configurations
                 .HasConstraintName(
                     "FK_OrderFulfillmentStatusHistory_Order_OrderId");
 
-            // Status
+            // =====================================
+            // Fulfillment Status
+            // =====================================
+
             builder.Property(x => x.Status)
                 .IsRequired()
                 .HasConversion<int>();
 
-            // When the status changed
+            // =====================================
+            // Change Timestamp
+            // =====================================
+
             builder.Property(x => x.ChangedAtUtc)
                 .IsRequired()
                 .HasColumnType("datetime2(3)");
 
-            // Optional user who performed the change
+            // =====================================
+            // Audit — Changed By
+            // =====================================
+
             builder.Property(x => x.ChangedByApplicationUserId)
                 .IsRequired(false);
 
@@ -63,23 +81,35 @@ namespace ECommerce.Infrastructure.Persistence.Configurations
                 .HasConstraintName(
                     "FK_OrderFulfillmentStatusHistory_ApplicationUser_ChangedByApplicationUserId");
 
-            // Optional reason
+            // =====================================
+            // Audit — Reason
+            // =====================================
+
             builder.Property(x => x.Reason)
+                .IsRequired(false)
                 .HasMaxLength(500);
 
-            // Common history query
+            // =====================================
+            // History Retrieval Index
+            // =====================================
+
             builder.HasIndex(x => new
             {
                 x.OrderId,
-                x.ChangedAtUtc
+                x.ChangedAtUtc,
+                x.OrderFulfillmentStatusHistoryId
             })
             .HasDatabaseName(
                 "IX_OrderFulfillmentStatusHistory_OrderId_ChangedAtUtc");
 
-            // Useful when auditing actions performed by a user
+            // =====================================
+            // Actor Audit Index
+            // =====================================
+
             builder.HasIndex(x => x.ChangedByApplicationUserId)
                 .HasDatabaseName(
                     "IX_OrderFulfillmentStatusHistory_ChangedByApplicationUserId");
+
         }
     }
 }

@@ -17,7 +17,7 @@ namespace ECommerce.Infrastructure.Persistence.Repositories
         }
         public Task<ProductResponse?> GetByIdAsync(long productId, CancellationToken cancellationToken = default)
         {
-            return _context.Products.AsNoTracking().Where(p=>productId == p.ProductId && p.IsActive).Select(p=> new ProductResponse{
+            return _context.Products.AsNoTracking().Where(p=>productId == p.ProductId && p.IsActive && (p.BrandId == null || (p.Brand != null && p.Brand.IsActive))).Select(p=> new ProductResponse{
                 ProductId=p.ProductId,
                 ProductName=p.Name,
                 Description=p.Description,

@@ -108,7 +108,7 @@ namespace ECommerce.Application.Catalog.Product.UpdateProduct
                 {
                     errors.Add(new Error(
                         "Brand.NotFound",
-                        "The selected brand does not exist.",
+                        "The selected brand does not exist or inactive.",
                         "BrandId"));
                 }
             }
@@ -137,7 +137,7 @@ namespace ECommerce.Application.Catalog.Product.UpdateProduct
                 name,
                 StringComparison.Ordinal))
             {
-                var baseSlug = ProductSlugGenerator.Generate(name!);
+                var baseSlug = SlugGenerator.Generate(name!);
                 var slug = baseSlug;
                 var suffix = 2;
 
