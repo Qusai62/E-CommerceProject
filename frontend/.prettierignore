@@ -1,0 +1,6 @@
+node_modules
+/dist
+src/routeTree.gen.ts
+src/shared/api/generated/
+openapi/swagger.original.json
+openapi/swagger.prepared.json

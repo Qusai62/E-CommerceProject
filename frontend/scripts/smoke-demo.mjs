@@ -1,0 +1,35 @@
+import fs from 'node:fs';
+import vm from 'node:vm';
+import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+const ts = require('typescript');
+
+const source = fs.readFileSync('src/shared/api/demoBaseQuery.ts', 'utf8');
+const compiled = ts.transpileModule(source, { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS } }).outputText;
+const exports = {};
+vm.runInNewContext(compiled, { exports, FormData, URL, URLSearchParams, Date, setTimeout, Promise }, { filename: 'demoBaseQuery.js' });
+const request = async (method, url, body) => exports.demoBaseQuery({ method, url, body });
+const status = (value) => value.error?.status ?? 200;
+
+assert.equal(status(await request('GET', '/api/auth/me')), 401);
+const customer = await request('POST', '/api/auth/login', { email: 'customer@aster.test', password: 'password' });
+assert.deepEqual(Array.from(customer.data.roles), ['Customer']);
+assert.equal(status(await request('GET', '/api/owner/inventory')), 403);
+assert.equal(status(await request('POST', '/api/auth/logout')), 200);
+const owner = await request('POST', '/api/auth/login', { email: 'owner@aster.test', password: 'password' });
+assert.deepEqual(Array.from(owner.data.roles), ['StoreOwner']);
+assert.equal(status(await request('GET', '/api/owner/inventory?pageNumber=1&pageSize=3')), 200);
+const category = await request('POST', '/api/store/categories', { name: 'Laptops', sortOrder: 1 });
+assert.equal(category.data.name, 'Laptops');
+assert.equal(status(await request('POST', '/api/auth/logout')), 200);
+await request('POST', '/api/auth/login', { email: 'customer@aster.test', password: 'password' });
+const add = await request('POST', '/api/cart/items', { productVariantId: 101, quantity: 2 });
+assert.equal(add.data.quantity, 2);
+const order = await request('POST', '/api/orders', { checkoutSubmissionId: '11111111-2222-4222-8222-333333333333', savedAddressId: 1, paymentMethod: 2 });
+assert.ok(order.data.orderId);
+const history = await request('GET', '/api/orders?pageNumber=1&pageSize=10');
+assert.equal(history.data.items.length, 1);
+const details = await request('GET', `/api/orders/${order.data.orderId}`);
+assert.equal(details.data.items[0].quantity, 2);
+console.log('PASS: guest, customer, StoreOwner, category creation, cart, order list/details demo behavior');

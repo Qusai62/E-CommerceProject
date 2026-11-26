@@ -1,0 +1,77 @@
+import fs from 'node:fs';
+const source = JSON.parse(fs.readFileSync('openapi/swagger.original.json', 'utf8'));
+const names = {
+  'post /api/brands': 'createBrand',
+  'get /api/brands': 'getBrands',
+  'put /api/brands/{brandId}': 'updateBrand',
+  'post /api/auth/login': 'login',
+  'post /api/auth/logout': 'logout',
+  'get /api/auth/me': 'getCurrentUser',
+  'get /api/checkout': 'getCheckout',
+  'get /api/checkout/addresses/{savedAddressId}': 'selectCheckoutAddress',
+  'get /api/checkout/shipping': 'getShippingCharge',
+  'post /api/checkout/review': 'reviewCheckout',
+  'post /api/orders': 'placeOrder',
+  'get /api/orders': 'getOrders',
+  'get /api/orders/{orderId}': 'getOrderById',
+  'get /api/store/orders': 'getStoreOrders',
+  'get /api/store/orders/{orderId}': 'getStoreOrderById',
+  'post /api/store/orders/{orderId}/cancel': 'cancelOrder',
+  'patch /api/store/orders/{orderId}/fulfillment-status': 'updateOrderFulfillmentStatus',
+  'get /api/store/orders/{orderId}/fulfillment-history': 'getOrderFulfillmentHistory',
+  'patch /api/store/orders/{orderId}/payment-status': 'updateOrderPaymentStatus',
+  'get /api/store/orders/by-number/{orderNumber}': 'getStoreOrderByNumber',
+  'delete /api/cart/items': 'clearCart',
+  'delete /api/cart/items/{cartItemId}': 'removeCartItem',
+  'post /api/checkout/payment-attempts/{paymentAttemptId}/stock-reservation':
+    'createStockReservation',
+  'post /api/customer/addresses': 'addAddress',
+  'get /api/customer/addresses': 'getAddresses',
+  'put /api/customer/addresses/{addressId}': 'updateAddress',
+  'delete /api/customer/addresses/{addressId}': 'deleteAddress',
+  'put /api/customer/addresses/{addressId}/default': 'setDefaultAddress',
+  'post /api/customers/register': 'registerCustomer',
+  'get /api/customers/me': 'getCustomerProfile',
+  'put /api/customers/me': 'updateCustomerProfile',
+  'post /api/customers/me/change-password': 'changeCustomerPassword',
+  'post /api/store/categories': 'createCategory',
+  'get /api/store/categories': 'getStoreCategories',
+  'put /api/store/categories/{categoryId}': 'updateCategory',
+  'put /api/store/categories/{categoryId}/parent': 'moveCategory',
+  'get /api/store/categories/hierarchy': 'getCategoryHierarchy',
+  'patch /api/store/categories/{categoryId}/deactivate': 'deactivateCategory',
+  'patch /api/store/categories/{categoryId}/reactivate': 'reactivateCategory',
+  'get /api/categories': 'getPublicCategories',
+  'post /api/products/{productId}/images': 'addProductImage',
+  'put /api/products/{productId}/images/{imageId}': 'updateProductImage',
+  'delete /api/products/{productId}/images/{imageId}': 'deleteProductImage',
+  'get /api/products/{id}': 'getProductById',
+  'put /api/products/{id}': 'updateProduct',
+  'post /api/products': 'createProduct',
+  'get /api/products': 'getProducts',
+  'patch /api/products/{productId}/deactivate': 'deactivateProduct',
+  'patch /api/products/{productId}/reactivate': 'reactivateProduct',
+  'post /api/products/{productId}/variants': 'createVariant',
+  'put /api/products/{productId}/variants/{variantId}': 'updateVariant',
+  'get /api/cart': 'getCart',
+  'post /api/cart/items': 'addCartItem',
+  'put /api/cart/items/{cartItemId}': 'updateCartItemQuantity',
+  'get /api/owner/inventory': 'getOwnerInventory',
+  'post /api/owner/inventory/variants/{productVariantId}/increase': 'increaseStock',
+  'post /api/owner/inventory/variants/{productVariantId}/decrease': 'decreaseStock',
+  'get /api/owner/inventory/out-of-stock/variants': 'getOutOfStockVariants',
+  'get /api/owner/inventory/out-of-stock/products': 'getOutOfStockProducts',
+  'post /api/products/{productId}/specifications': 'addSpecification',
+  'put /api/products/{productId}/specifications/{specificationId}': 'updateSpecification',
+  'delete /api/products/{productId}/specifications/{specificationId}': 'deleteSpecification',
+  'get /api/variants/{productVariantId}/availability': 'getVariantAvailability',
+};
+for (const [path, verbs] of Object.entries(source.paths)) {
+  for (const [verb, operation] of Object.entries(verbs)) {
+    const name = names[`${verb} ${path}`];
+    if (!name) throw Error(`No stable operation ID for ${verb} ${path}`);
+    operation.operationId = name;
+  }
+}
+fs.writeFileSync('openapi/swagger.prepared.json', JSON.stringify(source, null, 2) + '\n');
+console.log(`Prepared ${Object.keys(names).length} operations`);

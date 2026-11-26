@@ -1,0 +1,7 @@
+import type { ReactNode } from 'react';
+import { Cpu, LockKeyhole, ShieldCheck } from 'lucide-react';
+export function AuthShell({eyebrow,title,description,children}:{eyebrow:string;title:string;description:string;children:ReactNode}){
+  return <div className="grid min-h-[680px] lg:grid-cols-2"><section className="flex justify-center px-5 py-14 sm:px-12"><div className="w-full max-w-[440px]"><p className="eyebrow">{eyebrow}</p><h1 className="font-display mt-4 text-3xl leading-tight sm:text-4xl">{title}</h1><p className="mt-4 text-sm leading-7 text-slate-500">{description}</p>{children}</div></section>
+    <aside className="fancy-panel relative hidden flex-col justify-between overflow-hidden p-16 text-white lg:flex"><span className="text-xs font-bold tracking-[.18em] text-blue-100">NEXORA / SECURE ACCESS</span><div className="relative mx-auto grid size-72 place-items-center rounded-[56px] border border-white/20 bg-white/10 shadow-[0_30px_80px_#08173777]"><div className="absolute size-48 rounded-full bg-blue-300/20 blur-3xl"/><Cpu className="size-32 text-blue-100" strokeWidth={.65}/></div><div><LockKeyhole size={21} className="mb-5 text-blue-200"/><h2 className="max-w-lg text-4xl font-bold tracking-tight">Your tech. Your account. One secure place.</h2><p className="mt-5 flex items-center gap-2 text-sm text-blue-100"><ShieldCheck size={17}/> Cookie-based login with API CSRF protection</p></div></aside>
+  </div>;
+}

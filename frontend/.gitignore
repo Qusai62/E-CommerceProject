@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+.vite/
+
+# Testing
+coverage/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# Operating system
+.DS_Store
+Thumbs.db
+
+# Husky generated files
+.husky/_

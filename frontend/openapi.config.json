@@ -1,0 +1,10 @@
+{
+  "schemaFile": "./openapi/swagger.prepared.json",
+  "apiFile": "./src/shared/api/baseApi.ts",
+  "apiImport": "baseApi",
+  "outputFile": "./src/shared/api/generated/official.generated.ts",
+  "exportName": "officialApi",
+  "hooks": true,
+  "tag": false,
+  "operationIdTransformer": "none"
+}
