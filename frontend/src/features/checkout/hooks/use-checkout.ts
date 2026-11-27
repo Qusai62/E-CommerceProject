@@ -15,7 +15,8 @@ import { isReadyToPlaceOrder, isReviewCurrent, resolveAddressId } from '../model
 export function useCheckout() {
   const navigate = useNavigate();
   // Fail closed for real orders until the backend PaymentMethod numeric mapping is verified.
-  const paymentMappingVerified = import.meta.env.VITE_DEMO_MODE === 'true' ||
+  const paymentMappingVerified =
+    import.meta.env.VITE_DEMO_MODE === 'true' ||
     import.meta.env.VITE_PAYMENT_METHODS_VERIFIED === 'true';
   const cart = useGetCheckoutQuery();
   const addresses = useGetAddressesQuery();
@@ -30,8 +31,14 @@ export function useCheckout() {
   );
   const [reviewCheckout, reviewStatus] = useReviewCheckoutMutation();
   const [placeOrder, orderStatus] = usePlaceOrderMutation();
-  const currentReview = isReviewCurrent(reviewStatus.data, cart.data, selectedAddressId, paymentMethod)
-    ? reviewStatus.data : undefined;
+  const currentReview = isReviewCurrent(
+    reviewStatus.data,
+    cart.data,
+    selectedAddressId,
+    paymentMethod,
+  )
+    ? reviewStatus.data
+    : undefined;
   // Stable across retries of the SAME submission; never create a new UUID on each click.
   const submissionId = useRef<string | null>(null);
 
@@ -52,14 +59,23 @@ export function useCheckout() {
     }
   }
   async function submitOrder() {
-    if (!paymentMappingVerified || !isReadyToPlaceOrder(currentReview) || selectedAddressId === undefined || orderStatus.isLoading) return;
+    if (
+      !paymentMappingVerified ||
+      !isReadyToPlaceOrder(currentReview) ||
+      selectedAddressId === undefined ||
+      orderStatus.isLoading
+    ) {
+      return;
+    }
     submissionId.current ??= crypto.randomUUID();
     try {
-      const result = await placeOrder({ body: {
-        checkoutSubmissionId: submissionId.current,
-        savedAddressId: selectedAddressId,
-        paymentMethod,
-      } }).unwrap();
+      const result = await placeOrder({
+        body: {
+          checkoutSubmissionId: submissionId.current,
+          savedAddressId: selectedAddressId,
+          paymentMethod,
+        },
+      }).unwrap();
       await navigate({
         to: '/checkout/confirmation',
         search: { orderNumber: result.orderNumber ?? '', orderId: result.orderId ?? 0 },
@@ -70,8 +86,19 @@ export function useCheckout() {
     }
   }
   return {
-    cart, addresses, shipping, selectedAddress,
-    selectedAddressId, paymentMethod, paymentMappingVerified, chooseAddress, choosePayment,
-    reviewStatus, currentReview, orderStatus, review, submitOrder,
+    cart,
+    addresses,
+    shipping,
+    selectedAddress,
+    selectedAddressId,
+    paymentMethod,
+    paymentMappingVerified,
+    chooseAddress,
+    choosePayment,
+    reviewStatus,
+    currentReview,
+    orderStatus,
+    review,
+    submitOrder,
   };
 }

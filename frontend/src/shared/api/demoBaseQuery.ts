@@ -41,6 +41,30 @@ type DemoProduct = {
     sortOrder?: number;
   }>;
 };
+type DemoAddress = {
+  savedAddressId: number;
+  recipientName: string;
+  contactNumber: string;
+  city: string;
+  neighborhood: string;
+  street: string;
+  buildingInfo: string;
+  additionalAddressInfo: string;
+  isDefault: boolean;
+};
+type DemoStock = {
+  productVariantId: number;
+  productId: number;
+  productName: string;
+  sku: string;
+  productIsActive: boolean;
+  variantIsActive: boolean;
+  onHandQuantity: number;
+  reservedQuantity: number;
+  securedCODQuantity: number;
+  availableQuantity: number;
+  isInStock: boolean;
+};
 const products: DemoProduct[] = seedProducts.map(([name, priceFrom, brandId, productId]) => ({
   productId,
   name,
@@ -66,7 +90,7 @@ const products: DemoProduct[] = seedProducts.map(([name, priceFrom, brandId, pro
     { name: 'Condition', value: 'New (demo sample)' },
   ],
 }));
-const addresses = [
+const addresses: DemoAddress[] = [
   {
     savedAddressId: 1,
     recipientName: 'Alex Morgan',
@@ -79,7 +103,7 @@ const addresses = [
     isDefault: true,
   },
 ];
-const stock = seedProducts.map(([name, , , id]) => ({
+const stock: DemoStock[] = seedProducts.map(([name, , , id]) => ({
   productVariantId: id + 100,
   productId: id,
   productName: name,
@@ -202,10 +226,11 @@ export const demoBaseQuery: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQu
   const route = new URL(input.url, 'https://demo.invalid');
   const path = route.pathname;
   const params = new URLSearchParams(route.search);
-  if (input.params)
+  if (input.params) {
     Object.entries(input.params as Record<string, unknown>).forEach(([key, val]) => {
-      if (val != null && val !== '') params.set(key, String(val));
+      if (val !== null && val !== undefined && val !== '') params.set(key, String(val));
     });
+  }
   const body = (input.body ?? {}) as Record<string, any>;
   const numberInPath = (index: number) => Number(path.split('/')[index]);
 
@@ -226,7 +251,7 @@ export const demoBaseQuery: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQu
   }
   if (path === '/api/suppliers' && method === 'GET') {
     const search = params.get('Search')?.trim().toLowerCase();
-    let results = search
+    const results = search
       ? suppliers.filter((supplier) =>
           [supplier.name, supplier.phoneNumber, supplier.email]
             .filter(Boolean)
@@ -277,10 +302,12 @@ export const demoBaseQuery: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQu
     const supplierId = Number(body.supplierId);
     const invoiceNumber = typeof body.invoiceNumber === 'string' ? body.invoiceNumber.trim() : '';
     const items = Array.isArray(body.items) ? body.items : [];
-    if (!suppliers.some((supplier) => supplier.supplierId === supplierId))
+    if (!suppliers.some((supplier) => supplier.supplierId === supplierId)) {
       return fail(404, 'Supplier not found');
-    if (!invoiceNumber || !items.length)
+    }
+    if (!invoiceNumber || !items.length) {
       return fail(400, 'Invoice number and at least one item are required');
+    }
     const normalized = items.map((item) => ({
       productName: String(item.productName ?? '').trim(),
       quantity: Number(item.quantity),
@@ -295,8 +322,9 @@ export const demoBaseQuery: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQu
           !Number.isFinite(item.unitPrice) ||
           item.unitPrice < 0,
       )
-    )
+    ) {
       return fail(400, 'Invoice items are invalid');
+    }
     const totalAmount = normalized.reduce(
       (total, item) => total + item.quantity * item.unitPrice,
       0,
@@ -327,7 +355,7 @@ export const demoBaseQuery: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQu
     const paymentStatus = params.get('PaymentStatus')?.trim().toLowerCase();
     const sortBy = params.get('SortBy')?.toLowerCase() ?? 'invoicedate';
     const descending = params.get('SortDescending') !== 'false';
-    let results = supplierInvoices.filter((invoice) => {
+    const results = supplierInvoices.filter((invoice) => {
       if (supplierId && invoice.supplierId !== supplierId) return false;
       if (paymentStatus && invoice.paymentStatus.toLowerCase() !== paymentStatus) return false;
       return (
@@ -383,12 +411,14 @@ export const demoBaseQuery: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQu
       !Number.isFinite(amount) ||
       amount <= 0 ||
       Number.isNaN(Date.parse(paidAtUtc))
-    )
+    ) {
       return fail(400, 'A submission ID, positive payment amount, and payment date are required');
+    }
     const duplicate = supplierPayments.get(submissionId);
     if (duplicate) return ok(duplicate);
-    if (amount > invoice.remainingAmount)
+    if (amount > invoice.remainingAmount) {
       return fail(409, 'Payment amount exceeds the remaining balance');
+    }
     invoice.paidAmount += amount;
     invoice.remainingAmount -= amount;
     invoice.paymentStatus = invoice.remainingAmount === 0 ? 'Paid' : 'PartiallyPaid';
@@ -445,7 +475,7 @@ export const demoBaseQuery: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQu
     if (text) list = list.filter((p) => p.name.toLowerCase().includes(text));
     const min = Number(params.get('MinPrice') || 0);
     const max = Number(params.get('MaxPrice') || Infinity);
-    list = list.filter((p) => p.priceFrom >= min && p.priceFrom <= max);
+    list = list.filter((p) => p.priceFrom !== null && p.priceFrom >= min && p.priceFrom <= max);
     const brand = Number(params.get('BrandId') || 0);
     const cat = Number(params.get('CategoryId') || 0);
     if (brand) list = list.filter((p) => p.brandId === brand);
@@ -453,7 +483,7 @@ export const demoBaseQuery: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQu
     const desc = params.get('SortDirection')?.toLowerCase() === 'desc';
     switch (params.get('SortBy')?.toLowerCase()) {
       case 'price':
-        list.sort((a, b) => a.priceFrom - b.priceFrom);
+        list.sort((a, b) => (a.priceFrom ?? 0) - (b.priceFrom ?? 0));
         break;
       case 'name':
         list.sort((a, b) => a.name.localeCompare(b.name));
@@ -525,7 +555,7 @@ export const demoBaseQuery: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQu
       availableQuantity: 0,
       isInStock: false,
     });
-    if (p.priceFrom == null || Number(body.price) < p.priceFrom) p.priceFrom = Number(body.price);
+    if (p.priceFrom === null || Number(body.price) < p.priceFrom) p.priceFrom = Number(body.price);
     return ok(item);
   }
   const updateVariant = path.match(/^\/api\/products\/(\d+)\/variants\/(\d+)$/);
@@ -537,14 +567,15 @@ export const demoBaseQuery: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQu
     return ok({ ...variant, productId: p?.productId, updatedAtUtc: new Date().toISOString() });
   }
   if (path === '/api/owner/inventory' && method === 'GET') return ok(paged(stock, params));
-  if (path === '/api/owner/inventory/out-of-stock/variants')
+  if (path === '/api/owner/inventory/out-of-stock/variants') {
     return ok(
       paged(
         stock.filter((i) => !i.isInStock),
         params,
       ),
     );
-  if (path === '/api/owner/inventory/out-of-stock/products')
+  }
+  if (path === '/api/owner/inventory/out-of-stock/products') {
     return ok(
       paged(
         stock
@@ -557,15 +588,18 @@ export const demoBaseQuery: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQu
         params,
       ),
     );
+  }
   const adjustment = path.match(/^\/api\/owner\/inventory\/variants\/(\d+)\/(increase|decrease)$/);
   if (adjustment) {
     const item = stock.find((i) => i.productVariantId === Number(adjustment[1]));
     if (!item) return fail(404, 'Variant not found');
     const amount = Number(body.quantity);
-    if (!Number.isInteger(amount) || amount <= 0)
+    if (!Number.isInteger(amount) || amount <= 0) {
       return fail(400, 'Quantity must be a positive whole number');
-    if (adjustment[2] === 'decrease' && item.availableQuantity < amount)
+    }
+    if (adjustment[2] === 'decrease' && item.availableQuantity < amount) {
       return fail(409, 'Insufficient available stock');
+    }
     item.onHandQuantity += adjustment[2] === 'increase' ? amount : -amount;
     item.availableQuantity += adjustment[2] === 'increase' ? amount : -amount;
     item.isInStock = item.availableQuantity > 0;
@@ -652,7 +686,7 @@ export const demoBaseQuery: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQu
     const active = params.get('IsActive');
     let list = [...brands];
     if (search) list = list.filter((brand) => brand.name.toLowerCase().includes(search));
-    if (active != null) list = list.filter((brand) => brand.isActive === (active === 'true'));
+    if (active !== null) list = list.filter((brand) => brand.isActive === (active === 'true'));
     return ok(paged(list, params));
   }
   const brandMatch = path.match(/^\/api\/brands\/(\d+)$/);
@@ -717,13 +751,18 @@ export const demoBaseQuery: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQu
     if (method === 'PUT') Object.assign(customer, body);
     return ok(customer);
   }
-  if (path === '/api/customers/me/change-password')
+  if (path === '/api/customers/me/change-password') {
     return loggedIn ? ok(undefined) : fail(401, 'Sign in to continue');
+  }
   if (path === '/api/customer/addresses') {
     if (!loggedIn) return fail(401, 'Sign in to manage addresses');
     if (method === 'GET') return ok([...addresses]);
     if (method === 'POST') {
-      const a = { ...body, savedAddressId: Date.now(), isDefault: !addresses.length };
+      const a = {
+        ...body,
+        savedAddressId: Date.now(),
+        isDefault: !addresses.length,
+      } as DemoAddress;
       addresses.push(a);
       return ok(a);
     }
@@ -772,8 +811,9 @@ export const demoBaseQuery: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQu
     const available =
       stock.find((item) => item.productVariantId === variantId)?.availableQuantity ?? 0;
     const existing = cartItems.find((i) => i.productVariantId === variantId);
-    if (quantity + (existing?.quantity ?? 0) > available)
+    if (quantity + (existing?.quantity ?? 0) > available) {
       return fail(409, 'Requested quantity exceeds available stock');
+    }
     if (existing) {
       existing.quantity += quantity;
       existing.subtotal = existing.quantity * existing.unitPrice;
@@ -818,8 +858,9 @@ export const demoBaseQuery: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQu
     }
     const availability =
       stock.find((row) => row.productVariantId === item.productVariantId)?.availableQuantity ?? 0;
-    if (quantity > availability)
+    if (quantity > availability) {
       return fail(409, `Only ${availability} units are currently available`);
+    }
     item.quantity = quantity;
     item.subtotal = quantity * item.unitPrice;
     // Demo-only sample payload. UI deliberately does not rely on response fields.
@@ -847,8 +888,9 @@ export const demoBaseQuery: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQu
   const validateCheckout = () => {
     if (!loggedIn) return fail(401, 'Sign in to continue');
     if (!cartItems.length) return fail(409, 'Your cart is empty');
-    if (![1, 2].includes(Number(body.paymentMethod)))
+    if (![1, 2].includes(Number(body.paymentMethod))) {
       return fail(400, 'Select a supported payment method');
+    }
     const address = addresses.find((a) => a.savedAddressId === Number(body.savedAddressId));
     if (!address) return fail(404, 'Delivery address not found');
     for (const item of cartItems) {
@@ -890,8 +932,9 @@ export const demoBaseQuery: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQu
     );
     if (!order) return fail(404, 'Order not found');
     const fulfillmentStatus = Number(body.newStatus);
-    if (![1, 2, 3, 4].includes(fulfillmentStatus))
+    if (![1, 2, 3, 4].includes(fulfillmentStatus)) {
       return fail(400, 'A valid fulfillment status is required');
+    }
     order.fulfillmentStatus = fulfillmentStatus;
     const orderId = Number(order.orderId);
     const entries = fulfillmentHistory.get(orderId) ?? [];
@@ -953,8 +996,9 @@ export const demoBaseQuery: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQu
       (item) => item.orderId === Number(storeOrderPaymentStatusMatch[1]),
     );
     if (!order) return fail(404, 'Payment not found');
-    if (order.paymentMethod !== 2)
+    if (order.paymentMethod !== 2) {
       return fail(400, 'Only cash-on-delivery payments can be updated');
+    }
     if (order.paymentStatus !== 1) return fail(409, 'Payment is already paid');
     order.paymentStatus = 2;
     order.paidAtUtc = new Date().toISOString();
@@ -967,8 +1011,9 @@ export const demoBaseQuery: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQu
       !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
         submissionId,
       )
-    )
+    ) {
       return fail(400, 'A valid checkoutSubmissionId is required');
+    }
     const existing = placedOrders.get(submissionId);
     if (existing) return ok(existing); // Demo models server-side idempotency.
     const validation = validateCheckout();
@@ -1072,12 +1117,13 @@ export const demoBaseQuery: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQu
     Object.assign(item, body);
     return ok({ ...item, productId: p.productId, updatedAtUtc: new Date().toISOString() });
   }
-  if (path.includes('/stock-reservation'))
+  if (path.includes('/stock-reservation')) {
     return ok({
       ...body,
       paymentAttemptId: numberInPath(4),
       expiresAtUtc: new Date(Date.now() + 900000).toISOString(),
     });
+  }
 
   return fail(501, `Demo route not implemented: ${method} ${path}`);
 };

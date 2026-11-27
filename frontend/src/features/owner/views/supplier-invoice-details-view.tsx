@@ -29,8 +29,9 @@ export function OwnerSupplierInvoiceDetailsPage() {
     { id },
     { skip: !Number.isSafeInteger(id) || id < 1 },
   );
-  if (!Number.isSafeInteger(id) || id < 1)
+  if (!Number.isSafeInteger(id) || id < 1) {
     return <ErrorState error={{ data: { detail: 'Invoice ID must be a positive number.' } }} />;
+  }
   if (query.isLoading) return <LoadingState message="Loading invoice…" />;
   if (query.isError) return <ErrorState error={query.error} onRetry={query.refetch} />;
   if (!query.data) return null;
@@ -43,8 +44,9 @@ export function OwnerSupplierInvoiceDetailsPage() {
       amount <= 0 ||
       amount > invoice.remainingAmount ||
       payment.isLoading
-    )
+    ) {
       return;
+    }
     try {
       await recordPayment({
         id,

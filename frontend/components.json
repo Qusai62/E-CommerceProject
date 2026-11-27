@@ -3,7 +3,19 @@
   "style": "new-york",
   "rsc": false,
   "tsx": true,
-  "tailwind": { "config": "", "css": "src/styles.css", "baseColor": "neutral", "cssVariables": true, "prefix": "" },
-  "aliases": { "components": "@/components", "utils": "@/shared/lib/cn", "ui": "@/components/ui", "lib": "@/shared/lib", "hooks": "@/shared/hooks" },
+  "tailwind": {
+    "config": "",
+    "css": "src/styles.css",
+    "baseColor": "neutral",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "aliases": {
+    "components": "@/components",
+    "utils": "@/shared/lib/cn",
+    "ui": "@/components/ui",
+    "lib": "@/shared/lib",
+    "hooks": "@/shared/hooks"
+  },
   "iconLibrary": "lucide"
 }

@@ -18,3 +18,8 @@ secrets.json
 *.log
 # Git repository backups
 *.bundle
+# TypeScript build cache
+*.tsbuildinfo
+
+# Temporary diagnostic reports
+typescript-errors.txt

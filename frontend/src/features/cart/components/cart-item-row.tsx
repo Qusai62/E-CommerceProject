@@ -16,7 +16,10 @@ type CartItemRowProps = { item: ShoppingCartItemResponse };
 export function CartItemRow({ item }: CartItemRowProps) {
   const name = item.productName || 'Electronics item';
   const quantity = item.quantity ?? 0;
-  const validItem = typeof item.cartItemId === 'number' && Number.isSafeInteger(item.cartItemId) && item.cartItemId > 0;
+  const validItem =
+    typeof item.cartItemId === 'number' &&
+    Number.isSafeInteger(item.cartItemId) &&
+    item.cartItemId > 0;
   const { changeQuantity, isUpdating, error } = useUpdateCartQuantity(item.cartItemId);
   const { remove, removing } = useCartCommands();
 
@@ -36,18 +39,35 @@ export function CartItemRow({ item }: CartItemRowProps) {
               itemName={name}
               isUpdating={isUpdating}
               disabled={!validItem || !isValidCartQuantity(quantity)}
-              onQuantityChange={(next) => { void changeQuantity(next); }}
+              onQuantityChange={(next) => {
+                void changeQuantity(next);
+              }}
             />
           </div>
-          <div aria-live="polite" aria-atomic="true" className="mt-2 min-h-4 text-xs text-stone-500">
+          <div
+            aria-live="polite"
+            aria-atomic="true"
+            className="mt-2 min-h-4 text-xs text-stone-500"
+          >
             {isUpdating ? 'Updating quantity…' : ''}
           </div>
           <ConfirmAction
             destructive
             title="Remove this item?"
             description={`Remove ${name} from your shopping cart?`}
-            trigger={<Button variant="ghost" size="sm" className="mt-2 -ml-3 text-red-600" disabled={!validItem || removing.isLoading}><Trash2 size={15} /> Remove</Button>}
-            onConfirm={() => { void remove(item.cartItemId); }}
+            trigger={
+              <Button
+                variant="ghost"
+                size="sm"
+                className="mt-2 -ml-3 text-red-600"
+                disabled={!validItem || removing.isLoading}
+              >
+                <Trash2 size={15} /> Remove
+              </Button>
+            }
+            onConfirm={() => {
+              void remove(item.cartItemId);
+            }}
           />
         </div>
         <div className="col-span-2 text-right text-sm font-semibold tabular-nums sm:col-span-1 sm:self-center">
@@ -55,7 +75,11 @@ export function CartItemRow({ item }: CartItemRowProps) {
           <span className="mt-1 block text-xs font-normal text-stone-500">Item subtotal</span>
         </div>
       </div>
-      {(error || removing.error) && <div className="mt-4"><FormError error={error || removing.error} /></div>}
+      {(error || removing.error) && (
+        <div className="mt-4">
+          <FormError error={error || removing.error} />
+        </div>
+      )}
     </article>
   );
 }

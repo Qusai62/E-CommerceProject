@@ -22,18 +22,45 @@ export function AddressPicker({ addresses, selectedId, onSelect }: AddressPicker
       ) : (
         <div className="grid gap-3 sm:grid-cols-2">
           {addresses.filter(hasValidAddressId).map((address) => (
-            <label key={address.savedAddressId} className={cn('flex cursor-pointer gap-3 rounded-2xl border p-4 transition-colors focus-within:ring-2 focus-within:ring-blue-500', address.savedAddressId === selectedId ? 'border-blue-600 bg-blue-50/60' : 'border-line bg-white hover:border-blue-200')}>
-              <input name="delivery-address" type="radio" value={address.savedAddressId} checked={selectedId === address.savedAddressId} onChange={() => onSelect(address.savedAddressId)} className="mt-1 size-4 accent-blue-600" />
+            <label
+              key={address.savedAddressId}
+              className={cn(
+                'flex cursor-pointer gap-3 rounded-2xl border p-4 transition-colors focus-within:ring-2 focus-within:ring-blue-500',
+                address.savedAddressId === selectedId
+                  ? 'border-blue-600 bg-blue-50/60'
+                  : 'border-line bg-white hover:border-blue-200',
+              )}
+            >
+              <input
+                name="delivery-address"
+                type="radio"
+                value={address.savedAddressId}
+                checked={selectedId === address.savedAddressId}
+                onChange={() => onSelect(address.savedAddressId)}
+                className="mt-1 size-4 accent-blue-600"
+              />
               <span className="min-w-0 flex-1">
-                <span className="flex flex-wrap items-center gap-2 text-sm font-bold"><MapPin size={15} className="text-blue-600" />{address.recipientName || 'Delivery address'}{address.isDefault && <Badge>Default</Badge>}</span>
-                <span className="mt-2 block text-xs leading-6 text-slate-600">{[address.buildingInfo, address.street, address.neighborhood, address.city].filter(Boolean).join(', ')}</span>
+                <span className="flex flex-wrap items-center gap-2 text-sm font-bold">
+                  <MapPin size={15} className="text-blue-600" />
+                  {address.recipientName || 'Delivery address'}
+                  {address.isDefault && <Badge>Default</Badge>}
+                </span>
+                <span className="mt-2 block text-xs leading-6 text-slate-600">
+                  {[address.buildingInfo, address.street, address.neighborhood, address.city]
+                    .filter(Boolean)
+                    .join(', ')}
+                </span>
                 <span className="mt-1 block text-xs text-slate-500">{address.contactNumber}</span>
               </span>
             </label>
           ))}
         </div>
       )}
-      <Button variant="outline" size="sm" asChild><Link to="/account/addresses/new" search={{returnTo: '/checkout'}}><Plus size={15} /> Add another address</Link></Button>
+      <Button variant="outline" size="sm" asChild>
+        <Link to="/account/addresses/new" search={{ returnTo: '/checkout' }}>
+          <Plus size={15} /> Add another address
+        </Link>
+      </Button>
     </fieldset>
   );
 }

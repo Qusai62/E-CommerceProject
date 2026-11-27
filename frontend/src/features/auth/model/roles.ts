@@ -5,6 +5,8 @@ export function hasRole(roles: readonly string[] | null | undefined, role: AppRo
   return (roles ?? []).some((value) => value.toLowerCase() === role.toLowerCase());
 }
 
-export function preferredDestination(roles: readonly string[] | null | undefined): '/owner' | '/account' {
+export function preferredDestination(
+  roles: readonly string[] | null | undefined,
+): '/owner' | '/account' {
   return hasRole(roles, 'StoreOwner') ? '/owner' : '/account';
 }

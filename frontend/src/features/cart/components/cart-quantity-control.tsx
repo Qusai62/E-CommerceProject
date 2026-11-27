@@ -23,7 +23,11 @@ export function CartQuantityControl({
   const unableToUpdate = disabled || isUpdating;
 
   return (
-    <div role="group" aria-label={`Quantity for ${itemName}`} className="inline-flex items-center gap-1 rounded-xl border border-line bg-white p-1">
+    <div
+      role="group"
+      aria-label={`Quantity for ${itemName}`}
+      className="inline-flex items-center gap-1 rounded-xl border border-line bg-white p-1"
+    >
       <Button
         type="button"
         variant="ghost"
@@ -31,11 +35,16 @@ export function CartQuantityControl({
         className="h-8 w-8"
         aria-label={`Decrease ${itemName} quantity`}
         disabled={unableToUpdate || smaller === null}
-        onClick={() => { if (smaller !== null) onQuantityChange(smaller); }}
+        onClick={() => {
+          if (smaller !== null) onQuantityChange(smaller);
+        }}
       >
         <Minus aria-hidden="true" size={15} />
       </Button>
-      <output className="min-w-9 text-center text-sm font-semibold tabular-nums" aria-label="Current quantity">
+      <output
+        className="min-w-9 text-center text-sm font-semibold tabular-nums"
+        aria-label="Current quantity"
+      >
         {quantity}
       </output>
       <Button
@@ -45,7 +54,9 @@ export function CartQuantityControl({
         className="h-8 w-8"
         aria-label={`Increase ${itemName} quantity`}
         disabled={unableToUpdate || larger === null}
-        onClick={() => { if (larger !== null) onQuantityChange(larger); }}
+        onClick={() => {
+          if (larger !== null) onQuantityChange(larger);
+        }}
       >
         <Plus aria-hidden="true" size={15} />
       </Button>

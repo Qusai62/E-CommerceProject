@@ -3,6 +3,7 @@
 Use 0.4.0 as the complete project. You do not need to overlay older archives. Back up local changes first.
 
 Critical backend contract changes:
+
 - Removed `/api/customers/login`, `/api/customers/logout`, `/api/customers/csrf` and session-test from the latest Swagger.
 - Added `/api/auth/login`, `/api/auth/logout`, `/api/auth/me` with roles.
 - Added `GET /api/orders` (200 response lacks schema), `GET /api/orders/{orderId}`, and `POST /api/store/categories`.

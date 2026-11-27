@@ -6,7 +6,12 @@ export function useUpdateCartQuantity(cartItemId: number | undefined) {
   const [update, mutation] = useUpdateCartItemQuantityMutation();
 
   async function changeQuantity(quantity: number): Promise<void> {
-    if (cartItemId === undefined || !Number.isSafeInteger(cartItemId) || cartItemId <= 0 || !isValidCartQuantity(quantity)) {
+    if (
+      cartItemId === undefined ||
+      !Number.isSafeInteger(cartItemId) ||
+      cartItemId <= 0 ||
+      !isValidCartQuantity(quantity)
+    ) {
       return;
     }
 

@@ -74,4 +74,5 @@ export const reportsApi = baseApi.injectEndpoints({
   }),
 });
 
-export const { useGetSalesSummaryQuery, useGetRevenueTrendsQuery, useGetOrdersByStatusQuery } = reportsApi;
+export const { useGetSalesSummaryQuery, useGetRevenueTrendsQuery, useGetOrdersByStatusQuery } =
+  reportsApi;

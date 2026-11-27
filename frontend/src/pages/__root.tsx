@@ -9,9 +9,23 @@ const OwnerShell = lazy(async () => ({
 }));
 
 function RootLayout() {
-  const isOwner = useRouterState({ select: (state) => state.location.pathname.startsWith('/owner') });
-  if (isOwner) return <Suspense fallback={<LoadingState message="Preparing the merchant workspace…"/>}><OwnerShell><Outlet/></OwnerShell></Suspense>;
-  return <SiteLayout><Outlet/></SiteLayout>;
+  const isOwner = useRouterState({
+    select: (state) => state.location.pathname.startsWith('/owner'),
+  });
+  if (isOwner) {
+    return (
+      <Suspense fallback={<LoadingState message="Preparing the merchant workspace…" />}>
+        <OwnerShell>
+          <Outlet />
+        </OwnerShell>
+      </Suspense>
+    );
+  }
+  return (
+    <SiteLayout>
+      <Outlet />
+    </SiteLayout>
+  );
 }
 
 export const Route = createRootRoute({ component: RootLayout, notFoundComponent: NotFoundView });

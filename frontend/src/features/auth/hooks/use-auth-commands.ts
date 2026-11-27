@@ -1,9 +1,17 @@
 import { useNavigate, getRouteApi } from '@tanstack/react-router';
 import { useDispatch } from 'react-redux';
-import { useLoginMutation, useRegisterCustomerMutation } from '@/shared/api/generated/api.generated';
+import {
+  useLoginMutation,
+  useRegisterCustomerMutation,
+} from '@/shared/api/generated/api.generated';
 import { baseApi } from '@/shared/api/baseApi';
+import { clearCsrfRequestToken } from '@/shared/api/csrf';
 import { hasRole, preferredDestination } from '@/features/auth/model/roles';
-import { registerRequest, type LoginFormValues, type RegistrationFormValues } from '../model/auth-schemas';
+import {
+  registerRequest,
+  type LoginFormValues,
+  type RegistrationFormValues,
+} from '../model/auth-schemas';
 
 const loginRoute = getRouteApi('/login');
 
@@ -18,10 +26,15 @@ export function useSignIn() {
     status.reset();
     try {
       const session = await login({ body: values }).unwrap();
+      // Antiforgery request tokens are bound to the identity that requested them.
+      // Fetch a fresh token on the next unsafe request after authentication changes.
+      clearCsrfRequestToken();
       // Remove guest-scoped queries; /api/auth/me will reload with the new cookie.
       dispatch(baseApi.util.resetApiState());
-      const destination = redirect === '/owner' && !hasRole(session.roles, 'StoreOwner')
-        ? preferredDestination(session.roles) : redirect ?? preferredDestination(session.roles);
+      const destination =
+        redirect === '/owner' && !hasRole(session.roles, 'StoreOwner')
+          ? preferredDestination(session.roles)
+          : (redirect ?? preferredDestination(session.roles));
       await navigate({ to: destination });
     } catch {
       // The mutation exposes backend errors to the view.

@@ -181,13 +181,14 @@ function OwnerWorkspace({ children, email }: { children: ReactNode; email?: stri
 /** Owner routes are UX gated from /api/auth/me. ASP.NET Core must enforce StoreOwner authorization. */
 export function OwnerShell({ children }: { children: ReactNode }) {
   const session = useGetCurrentUserQuery();
-  if (session.isLoading || session.isUninitialized)
+  if (session.isLoading || session.isUninitialized) {
     return (
       <div className="grid min-h-screen place-items-center bg-slate-100">
         <LoadingState message="Checking StoreOwner access…" />
       </div>
     );
-  if (session.isError && 'status' in session.error && session.error.status === 401)
+  }
+  if (session.isError && 'status' in session.error && session.error.status === 401) {
     return (
       <div className="grid min-h-screen place-items-center bg-slate-100 p-5">
         <div className="w-full max-w-lg rounded-3xl bg-white px-8 py-14 text-center shadow-xl">
@@ -204,13 +205,15 @@ export function OwnerShell({ children }: { children: ReactNode }) {
         </div>
       </div>
     );
-  if (session.isError)
+  }
+  if (session.isError) {
     return (
       <div className="grid min-h-screen place-items-center p-8">
         <ErrorState error={session.error} onRetry={() => void session.refetch()} />
       </div>
     );
-  if (!hasRole(session.data?.roles, 'StoreOwner'))
+  }
+  if (!hasRole(session.data?.roles, 'StoreOwner')) {
     return (
       <div className="grid min-h-screen place-items-center bg-slate-100 p-5">
         <EmptyState
@@ -225,5 +228,6 @@ export function OwnerShell({ children }: { children: ReactNode }) {
         />
       </div>
     );
+  }
   return <OwnerWorkspace email={session.data?.email}>{children}</OwnerWorkspace>;
 }

@@ -105,7 +105,7 @@ export function OwnerCategoriesPage() {
                               <Button
                                 size="sm"
                                 variant="ghost"
-                                onClick={() => setEditingId(category.categoryId)}
+                                onClick={() => setEditingId(category.categoryId ?? null)}
                               >
                                 <FolderPen /> Edit
                               </Button>

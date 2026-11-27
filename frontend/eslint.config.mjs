@@ -13,13 +13,17 @@ import globals from 'globals';
 export default tseslint.config(
   {
     ignores: [
-      'dist/**', 'coverage/**', 'src/routeTree.gen.ts',
-      'src/shared/api/generated/**', 'node_modules/**', 'openapi/**',
+      'dist/**',
+      'coverage/**',
+      'src/routeTree.gen.ts',
+      'src/shared/api/generated/**',
+      'node_modules/**',
+      'openapi/**',
     ],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
-  { files: ['scripts/**/*.mjs', '*.mjs'], languageOptions: { globals: globals.node } },
+  { files: ['scripts/**/*.mjs', '*.mjs', '*.cjs'], languageOptions: { globals: globals.node } },
   {
     files: ['src/**/*.{ts,tsx}'],
     languageOptions: { globals: globals.browser },
@@ -27,8 +31,8 @@ export default tseslint.config(
     plugins: { 'react-hooks': reactHooks, react, 'jsx-a11y': jsxA11y },
     rules: {
       ...reactHooks.configs.recommended.rules,
-      'curly': ['error', 'multi-line'],
-      'eqeqeq': ['error', 'always'],
+      curly: ['error', 'multi-line'],
+      eqeqeq: ['error', 'always'],
       'no-var': 'error',
       'prefer-const': 'error',
       'object-shorthand': 'error',
@@ -38,8 +42,14 @@ export default tseslint.config(
       'jsx-a11y/anchor-has-content': 'error',
       '@typescript-eslint/consistent-type-imports': 'error',
       '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
     },
   },
-  { files: ['src/shared/api/demoBaseQuery.ts'], rules: { '@typescript-eslint/no-explicit-any': 'off' } },
+  {
+    files: ['src/shared/api/demoBaseQuery.ts'],
+    rules: { '@typescript-eslint/no-explicit-any': 'off' },
+  },
 );

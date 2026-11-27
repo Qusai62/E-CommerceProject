@@ -92,14 +92,15 @@ export function OwnerSupplierInvoiceCreatePage() {
   const openInvoice = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const id = Number(invoiceId);
-    if (Number.isSafeInteger(id) && id > 0)
+    if (Number.isSafeInteger(id) && id > 0) {
       void navigate({
         to: '/owner/supplier-invoices/$invoiceId',
         params: { invoiceId: String(id) },
       });
+    }
   };
   if (suppliers.isLoading) return <LoadingState message="Loading suppliers…" />;
-  if (!suppliers.data?.items.length)
+  if (!suppliers.data?.items.length) {
     return (
       <EmptyState
         icon={<FileText size={32} />}
@@ -107,6 +108,7 @@ export function OwnerSupplierInvoiceCreatePage() {
         description="An invoice must be linked to a supplier."
       />
     );
+  }
   return (
     <div className="max-w-6xl space-y-7">
       <PageHeader

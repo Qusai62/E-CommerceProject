@@ -33,7 +33,8 @@ export function useVariantCommands(productId: number) {
   const [update, updateStatus] = useUpdateVariantMutation();
   return {
     create: (body: CreateProductVariantRequest) => create({ productId, body }).unwrap(),
-    update: (variantId: number, body: UpdateProductVariantRequest) => update({ productId, variantId, body }).unwrap(),
+    update: (variantId: number, body: UpdateProductVariantRequest) =>
+      update({ productId, variantId, body }).unwrap(),
     error: createStatus.error ?? updateStatus.error,
     isLoading: createStatus.isLoading || updateStatus.isLoading,
     isSuccess: createStatus.isSuccess || updateStatus.isSuccess,
@@ -52,7 +53,8 @@ export function useImageCommands(productId: number) {
       body.append('SortOrder', String(sortOrder));
       return add({ productId, body }).unwrap();
     },
-    update: (imageId: number, body: UpdateProductImageRequest) => update({ productId, imageId, body }).unwrap(),
+    update: (imageId: number, body: UpdateProductImageRequest) =>
+      update({ productId, imageId, body }).unwrap(),
     remove: (imageId: number) => remove({ productId, imageId }).unwrap(),
     error: addStatus.error ?? updateStatus.error ?? removeStatus.error,
     isLoading: addStatus.isLoading || updateStatus.isLoading || removeStatus.isLoading,
@@ -66,7 +68,8 @@ export function useSpecificationCommands(productId: number) {
   const [remove, removeStatus] = useDeleteSpecificationMutation();
   return {
     add: (body: AddTechnicalSpecificationRequest) => add({ productId, body }).unwrap(),
-    update: (specificationId: number, body: AddTechnicalSpecificationRequest) => update({ productId, specificationId, body }).unwrap(),
+    update: (specificationId: number, body: AddTechnicalSpecificationRequest) =>
+      update({ productId, specificationId, body }).unwrap(),
     remove: (specificationId: number) => remove({ productId, specificationId }).unwrap(),
     error: addStatus.error ?? updateStatus.error ?? removeStatus.error,
     isLoading: addStatus.isLoading || updateStatus.isLoading || removeStatus.isLoading,
